@@ -76,16 +76,16 @@ class StackFAQ_XML_Parser(object):
                                             "label": 1
                                         }
                                         query_answer_pairs.append(data)
-                        else:
-                            i += 1
-                            data = {
-                                "id": str(i),
-                                "question": question,
-                                "answer": a,
-                                "query_type": "faq",
-                                "label": 1
-                            }
-                            query_answer_pairs.append(data)
+                        
+                        i += 1
+                        data = {
+                            "id": str(i),
+                            "question": question,
+                            "answer": a,
+                            "query_type": "faq",
+                            "label": 1
+                        }
+                        query_answer_pairs.append(data)
                 else:
                     if isinstance(rephr, list):
                         for r in rephr:
@@ -101,16 +101,16 @@ class StackFAQ_XML_Parser(object):
                                     }
                                     query_answer_pairs.append(data)
                     
-                    else:
-                        i += 1
-                        data = {
-                            "id": str(i),
-                            "question": question,
-                            "answer": answers,
-                            "query_type": "faq",
-                            "label": 1
-                        }
-                        query_answer_pairs.append(data)
+                    
+                    i += 1
+                    data = {
+                        "id": str(i),
+                        "question": question,
+                        "answer": answers,
+                        "query_type": "faq",
+                        "label": 1
+                    }
+                    query_answer_pairs.append(data)
                                 
         return query_answer_pairs
 
