@@ -124,7 +124,7 @@ class Training_Data_Generator(object):
         neg_labels = []
         id2negids = dict()
         
-        if self.loss_type == "triplet":
+        if self.loss_type == "triplet" or self.loss_type == "softmax":
             if self.neg_type == "simple":
                 pos_labels = self.generate_pos_labels(query_answer_pairs)
                 id2negids = self.get_id2negids(self.id2qa)
@@ -137,21 +137,10 @@ class Training_Data_Generator(object):
                 neg_df = pd.DataFrame.from_records(neg_labels)
                 neg_df = neg_df[neg_df['rank'] <= self.num_samples]
                 pos_df = pd.DataFrame.from_records(pos_labels)
-        elif self.loss_type == "softmax":
-            if self.neg_type == "simple":
-                pos_labels = self.generate_pos_labels(query_answer_pairs)
-                id2negids = self.get_id2negids(self.id2qa)
-                neg_labels = self.generate_neg_labels(id2negids)
-                pos_df = pd.DataFrame(pos_labels)
-                neg_df = pd.DataFrame(neg_labels)
-            elif self.neg_type == "hard":
-                neg_labels = load_from_json(self.hard_filepath)
-                pos_labels = query_answer_pairs
-                neg_df = pd.DataFrame.from_records(neg_labels)
-                neg_df = neg_df[neg_df['rank'] <= self.num_samples]
-                pos_df = pd.DataFrame.from_records(pos_labels)
+            else:
+                raise ValueError("error, no neg_type found for".format(self.neg_type))
         else:
-            raise ValueError("error, no neg_type found for".format(self.neg_type))
+            raise ValueError("error, no loss_type found for".format(self.loss_type))
 
         self.id2negids = id2negids
         self.pos_labels = pos_labels
