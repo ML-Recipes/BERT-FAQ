@@ -54,19 +54,25 @@ if __name__ == "__main__":
         # Ingesting data to Elasticsearch
         es = connections.create_connection(hosts=['localhost'])
         
-        dirnames = ["FAQIR", "StackFAQ"]
+        dirnames = ["CovidFAQ", "FAQIR", "StackFAQ"]
         
         index_name = ""
         faq_qa_pairs = []
         for dirname in dirnames:
-            if dirname == "FAQIR":
+            if dirname == "CovidFAQ":
+                index_name = "covidfaq"
+                filepath = 'data/' + dirname + '/query_answer_pairs.json'
+                faq_qa_pairs = get_faq_qa_pairs(filepath)
+            elif dirname == "FAQIR":
                 index_name = "faqir"
                 filepath = 'data/' + dirname + '/query_answer_pairs.json'
                 faq_qa_pairs = get_faq_qa_pairs(filepath)
-            else:
+            elif dirname == "StackFAQ":
                 index_name = "stackfaq"
                 filepath = 'data/' + dirname + '/query_answer_pairs.json'
                 faq_qa_pairs = get_faq_qa_pairs(filepath)
+            else:
+                raise ValueError("error, directory not exists")
 
             print("{} records: ".format(dirname), len(faq_qa_pairs))
 
