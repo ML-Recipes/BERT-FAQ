@@ -229,13 +229,19 @@ def get_evaluation_df(rank_results_filepath):
 
 
 if __name__ == "__main__":
+    
     # FAQIR
     rank_results_filepath="data/FAQIR/rank_results"
     df = get_evaluation_df(rank_results_filepath)
     df.to_csv(rank_results_filepath + "/results.csv", index=False)
-
+    
     # StackFAQ
     rank_results_filepath="data/StackFAQ/rank_results"
+    df = get_evaluation_df(rank_results_filepath)
+    df.to_csv(rank_results_filepath + "/results.csv", index=False)
+
+    # CovidFAQ
+    rank_results_filepath="data/CovidFAQ/rank_results"
     df = get_evaluation_df(rank_results_filepath)
     df.to_csv(rank_results_filepath + "/results.csv", index=False)
 
