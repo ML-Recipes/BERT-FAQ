@@ -1,6 +1,13 @@
 import json
 import os
 
+def isDir(dirname):
+    """
+    :param dirname: dirname
+    :return: boolean
+    """
+    return os.path.isdir(dirname)
+
 def make_dirs(path):
     """ Create directory at given path 
     
