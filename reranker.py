@@ -26,14 +26,12 @@ class ReRanker(object):
     :param bert_model_path: path residing finetuned BERT model
     :param test_queries: test queries used as query to Elasticsearch index
     :param relevance_label_df: dataframe of relevance labels
-    :param loss_type: BERT model trained with loss type (triplet or softmax)
     """
 
-    def __init__(self, bert_model_path, test_queries, relevance_label_df, loss_type="triplet"):
+    def __init__(self, bert_model_path, test_queries, relevance_label_df):
         
         self.bert_model_path = bert_model_path
         self.test_queries = test_queries
-        self.loss_type = loss_type
         self.es_topk_results = []
         self.bert_topk_results = []
         self.reranked_results = []
@@ -101,9 +99,7 @@ class ReRanker(object):
         
         logging.info("Generating BERT top-k results ...")
         
-        faq_bert = FAQ_BERT(
-            model_path=self.bert_model_path, loss_type=self.loss_type
-        )
+        faq_bert = FAQ_BERT(bert_model_path=self.bert_model_path)
 
         bert_topk_results = []
         for result in tqdm(all_results):

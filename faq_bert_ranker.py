@@ -7,15 +7,13 @@ class FAQ_BERT_Ranker(object):
     :param es: Elasticsearch instance
     :param index: Elasticsearch index name
     :param top_k: parameter used during model training (e.g top_k=100)
-    :param loss_type: loss type used during model training (e.g loss_type=triplet/softmax)
     :param bert_model_path: bert model path
     """
-    def __init__(self, es, index, fields, top_k, loss_type, bert_model_path):
+    def __init__(self, es, index, fields, top_k, bert_model_path):
         self.es = es
         self.index = index
         self.fields = fields
         self.top_k = top_k
-        self.loss_type = loss_type
         self.bert_model_path = bert_model_path
         self.searcher = Searcher(es, index, fields, top_k)
 
@@ -46,7 +44,7 @@ class FAQ_BERT_Ranker(object):
         :param es_topk_results: ES top-k results
         :return: BERT predictions on ES top-k results
         """
-        faq_bert = FAQ_BERT(model_path=self.bert_model_path, loss_type=self.loss_type)
+        faq_bert = FAQ_BERT(bert_model_path=self.bert_model_path)
 
         bert_topk_preds = [
             {

@@ -1,6 +1,7 @@
 import sentence_transformers
 from sentence_transformers import SentenceTransformer, util
 from sentence_transformers.cross_encoder import CrossEncoder
+from shared.utils import isDir
 import numpy as np
 import os
 
@@ -8,17 +9,33 @@ import os
 class FAQ_BERT(object):
     """ Class for predicting a continuous value from 0..1 for a given question-answer pair
 
-    :param model_path: model path
-    :param loss_type: loss type used during model training
+    :param bert_model_path: trained FAQ BERT model path
     """ 
-    def __init__(self, model_path, loss_type="triplet"):
+    def __init__(self, bert_model_path):
         
-        self.model_path = model_path
-        self.loss_type = loss_type
+        self.bert_model_path = bert_model_path
+        self.abs_path = ""
+        self.model_path = ""
+        self.model_dirname = ""
+        
+        dirs = self.bert_model_path.split('/')
 
-        if self.loss_type not in {'triplet', 'softmax'}:
-            raise ValueError('loss_type not exist')
+        # Get model directory name
+        if len(dirs) > 1:
+            self.abs_path = self.bert_model_path.rsplit("/", 1)[0]
+            self.model_dirname = self.bert_model_path.rsplit("/", 1)[-1]
+            self.model_path = self.abs_path + "/" + self.model_dirname
+        else:
+            self.model_dirname = self.bert_model_path
+            self.model_path = self.bert_model_path
 
+        # Extract loss_type from model dirname
+        self.params = self.model_dirname.split("_")
+        self.loss_type = self.params[0]
+       
+        if not isDir(self.model_path):
+            raise ValueError("model not found")
+        
         self.model = None
         if self.loss_type == "triplet":
             self.model = SentenceTransformer(self.model_path)
