@@ -5,6 +5,7 @@ from flask_cors import CORS
 import json
 
 from faq_bert_ranker import FAQ_BERT_Ranker
+from shared.utils import isDir
 
 try:
     es = connections.create_connection(hosts=['localhost'])
@@ -30,31 +31,26 @@ def chatbot_response():
         neg_type  = json_data.get('neg_type', 'Hard')
         query_type = json_data.get('query_type', 'USER_QUERY')
 
-        if dataset not in {'CovidFAQ', 'FAQIR', 'StackFAQ'}:
-            return json.dumps({"Error":  "{} dataset not exists!".format(dataset)})
-        
-        if loss_type not in {'Softmax', 'Triplet'}:
-            return json.dumps({"Error":  "{} loss_type not exists!".format(loss_type)})
-
-        if neg_type not in {'Simple', 'Hard'}:
-            return json.dumps({"Error":  "{} neg_type not exists!".format(neg_type)})
-        
-        if query_type not in {'FAQ', 'USER_QUERY'}:
-            return json.dumps({"Error":  "{} neg_type not exists!".format(query_type)})
-
         # Get model name from model parameters
         model_name = "{}_{}_{}_{}".format(loss_type.lower(), neg_type.lower(), query_type.lower(), version)
         bert_model_path = "output" + "/" + dataset + "/models/" + model_name
-  
+
+        if not isDir(bert_model_path):
+            response = [{"answer": "No model found with given parameters ..."}]
+            return json.dumps(response)
+        
         # Perform ranking
         faq_bert_ranker = FAQ_BERT_Ranker(
             es=es, index=dataset.lower(), fields=fields, top_k=top_k, bert_model_path=bert_model_path
         )
 
         ranked_results = faq_bert_ranker.rank_results(query_string)
-        response = json.dumps(ranked_results)
-        
-        return response
+      
+        if ranked_results:
+            return json.dumps(ranked_results)
+        else:
+            response = [{"answer": "No result found for the given question ..."}]
+            return json.dumps(response)
 
     except Exception as e:
         return {"Error ": str(e)}
