@@ -58,7 +58,7 @@ class FAQ_BERT_Finetuning(object):
         
         self.bert_model = None
         if self.loss_type == "triplet":
-          word_embedding_model = models.BERT(self.pre_trained_name)
+          word_embedding_model = models.Transformer(self.pre_trained_name)
 
           # # Apply mean pooling to get one fixed sized sentence vector
           pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
