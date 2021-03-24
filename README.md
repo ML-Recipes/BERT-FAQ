@@ -99,42 +99,42 @@ Technologies used: Python 3.8.3, Elasticsearch 7.10.2, Jupyter Notebook, Google 
 |   Method   |        Matching      |       |Training |Negative|      |      |        |      |      |      |      |
 |            |          Field       | Loss  |   Data  |Sampling|NDCG@3|NDCG@5|NDCG@10 |  P@3 |  P@5 | P@10 |  MAP |
 |:----------:|:--------------------:|:-----:|:-------:|:------:|:----:|:----:|:------:|:----:|:----:|:----:|:----:|
-|Unsupervised|answer                |       |         |        |      |      |        |      |      |      |      |
-|Unsupervised|question              |       |         |        |      |      |        |      |      |      |      |
-|Unsupervised|question_answer       |       |         |        |      |      |        |      |      |      |      |
-|Unsupervised|question_answer_concat|       |         |        |      |      |        |      |      |      |      |
-| Supervised |answer                |triplet|   faq   | simple |      |      |        |      |      |      |      | 
-| Supervised |question              |triplet|   faq   | simple |      |      |        |      |      |      |      | 
-| Supervised |question_answer       |triplet|   faq   | simple |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|triplet|   faq   | simple |      |      |        |      |      |      |      | 
-| Supervised |answer                |triplet|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question              |triplet|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer       |triplet|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|triplet|   faq   |  hard  |      |      |        |      |      |      |      | 
-| Supervised |answer                |triplet|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question              |triplet|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question_answer       |triplet|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|triplet|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |answer                |triplet|faq+query|  hard  |      |      |        |      |      |      |      |
-| Supervised |question              |triplet|faq+query|  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer       |triplet|faq+query|  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|triplet|faq+query|  hard  |      |      |        |      |      |      |      |
-| Supervised |answer                |softmax|   faq   | simple |      |      |        |      |      |      |      |
-| Supervised |question              |softmax|   faq   | simple |      |      |        |      |      |      |      |
-| Supervised |question_answer       |softmax|   faq   | simple |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|softmax|   faq   | simple |      |      |        |      |      |      |      |
-| Supervised |answer                |softmax|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question              |softmax|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer       |softmax|   faq   |  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|softmax|   faq   |  hard  |      |      |        |      |      |      |      | 
-| Supervised |answer                |softmax|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question              |softmax|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question_answer       |softmax|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |question_answer_concat|softmax|faq+query| simple |      |      |        |      |      |      |      |
-| Supervised |answer                |softmax|faq+query|  hard  |      |      |        |      |      |      |      | 
-| Supervised |question              |softmax|faq+query|  hard  |      |      |        |      |      |      |      |
-| Supervised |question_answer       |softmax|faq+query|  hard  |      |      |        |      |      |      |      |  
-| Supervised |question_answer_concat|softmax|faq+query|  hard  |      |      |        |      |      |      |      |
+|Unsupervised|answer                |       |         |        |0.2667|0.1431|0.2905  |0.1212|0.3069|0.0916|0.1884|
+|Unsupervised|question              |       |         |        |0.3798|0.2060|0.4045  |0.1726|0.4258|0.1303|0.2781|
+|Unsupervised|question_answer       |       |         |        |0.3761|0.2029|0.4008  |0.1708|0.4225|0.1327|0.2664|
+|Unsupervised|question_answer_concat|       |         |        |0.4318|0.2482|0.4573  |0.2130|0.4783|0.1606|0.3106|
+| Supervised |answer                |triplet|   faq   | simple |0.4501|0.2787|0.4724  |0.2455|0.4915|0.1801|0.3909| 
+| Supervised |question              |triplet|   faq   | simple |0.5409|0.3347|0.5643  |0.2872|0.5774|0.2198|0.4571| 
+| Supervised |question_answer       |triplet|   faq   | simple |0.5378|0.3350|0.5642  |0.2921|0.5811|0.2286|0.4561|
+| Supervised |question_answer_concat|triplet|   faq   | simple |0.5740|0.3652|0.5938  |0.3167|0.6095|0.2474|0.4724| 
+| Supervised |answer                |triplet|   faq   |  hard  |0.3991|0.2291|0.4156  |0.1858|0.4386|0.1368|0.3202|
+| Supervised |question              |triplet|   faq   |  hard  |0.4889|0.2818|0.5145  |0.2294|0.5335|0.1680|0.3788|
+| Supervised |question_answer       |triplet|   faq   |  hard  |0.4970|0.2877|0.5169  |0.2355|0.5330|0.1753|0.3803|
+| Supervised |question_answer_concat|triplet|   faq   |  hard  |0.5255|0.3178|0.5472  |0.2595|0.5683|0.1933|0.4017| 
+| Supervised |answer                |triplet|faq+query| simple |0.5144|0.3266|0.5337  |0.2778|0.5497|0.2009|0.4594|
+| Supervised |question              |triplet|faq+query| simple |0.6601|0.4342|0.6733  |0.3697|0.6769|0.2707|0.5925|
+| Supervised |question_answer       |triplet|faq+query| simple |0.6412|0.4210|0.6584  |0.3582|0.6668|0.2669|0.5670|
+| Supervised |question_answer_concat|triplet|faq+query| simple |0.6658|0.4418|0.6875  |0.3866|0.6943|0.2905|0.5843|
+| Supervised |answer                |triplet|faq+query|  hard  |0.7136|0.5151|0.7130  |0.3988|0.7126|0.2480|0.7059|
+| Supervised |question              |triplet|faq+query|  hard  |0.8122|0.5962|0.8111  |0.4773|0.8105|0.3172|0.8020|
+| Supervised |question_answer       |triplet|faq+query|  hard  |0.8247|0.6238|0.8239  |0.5035|0.8232|0.3331|0.8158|
+| Supervised |question_answer_concat|triplet|faq+query|  hard  |0.8549|0.6653|0.8541  |0.5459|0.8533|0.3707|0.8454|
+| Supervised |answer                |softmax|   faq   | simple |0.3386|0.1986|0.3648  |0.1680|0.3864|0.1309|0.2706|
+| Supervised |question              |softmax|   faq   | simple |0.4118|0.2451|0.4466  |0.2103|0.4722|0.1620|0.3199|
+| Supervised |question_answer       |softmax|   faq   | simple |0.3893|0.2257|0.4187  |0.1975|0.4446|0.1568|0.2972|
+| Supervised |question_answer_concat|softmax|   faq   | simple |0.4241|0.2513|0.4566  |0.2154|0.4769|0.1668|0.3140|
+| Supervised |answer                |softmax|   faq   |  hard  |0.2690|0.1440|0.2938  |0.1224|0.3096|0.0921|0.1908|
+| Supervised |question              |softmax|   faq   |  hard  |0.3786|0.2054|0.4044  |0.1723|0.4250|0.1300|0.2783|
+| Supervised |question_answer       |softmax|   faq   |  hard  |0.3757|0.2043|0.4017  |0.1713|0.4230|0.1332|0.2675|
+| Supervised |question_answer_concat|softmax|   faq   |  hard  |0.4318|0.2488|0.4560  |0.2120|0.4776|0.1605|0.3114| 
+| Supervised |answer                |softmax|faq+query| simple |0.4941|0.3102|0.5173  |0.2654|0.5297|0.1877|0.4333|
+| Supervised |question              |softmax|faq+query| simple |0.6533|0.4119|0.6656  |0.3454|0.6702|0.2513|0.5671|
+| Supervised |question_answer       |softmax|faq+query| simple |0.6174|0.3962|0.6385  |0.3410|0.6487|0.2516|0.5328|
+| Supervised |question_answer_concat|softmax|faq+query| simple |0.6606|0.4283|0.6743  |0.3662|0.6801|0.2711|0.5540|
+| Supervised |answer                |softmax|faq+query|  hard  |0.6791|0.4776|0.6797  |0.3716|0.6785|0.2418|0.6505| 
+| Supervised |question              |softmax|faq+query|  hard  |0.7686|0.5413|0.7710  |0.4382|0.7683|0.2995|0.7287|
+| Supervised |question_answer       |softmax|faq+query|  hard  |0.7960|0.5827|0.7950  |0.4719|0.7920|0.3215|0.7587|  
+| Supervised |question_answer_concat|softmax|faq+query|  hard  |0.8345|0.6329|0.8339  |0.5194|0.8313|0.3595|0.8030|
 |-----------------------------------------------------------------------------------------------------------------|
 
 ```
@@ -184,14 +184,14 @@ publicly available datasets: CovidFAQ, StackFAQ, and FAQIR datasets.
     * [CovidFAQ](notebook/CovidFAQ/04.Generating_Ground_Truth_Dataset.ipynb)
     * [StackFAQ](notebook/StackFAQ/04.Generating_Ground_Truth_Dataset.ipynb)
     * [FAQIR](notebook/FAQIR/04.Generating_Ground_Truth_Dataset.ipynb)
-5. Model Training
-    * [CovidFAQ](notebook/CovidFAQ/05.Model_Training.ipynb)
-    * [StackFAQ](notebook/StackFAQ/05.Model_Training.ipynb)
-    * [FAQIR](notebook/FAQIR/05.Model_Training.ipynb)
-6. Generating Elasticsearch Top-k For Re-ranking
-    * [CovidFAQ](notebook/CovidFAQ/06.Generating_ES_Topk_Results_For_Reranking.ipynb)
-    * [StackFAQ](notebook/StackFAQ/06.Generating_ES_Topk_Results_For_Reranking.ipynb)
-    * [FAQIR](notebook/FAQIR/06.Generating_ES_Topk_Results_For_Reranking.ipynb)
+5. Generating Elasticsearch Top-k For Re-ranking
+    * [CovidFAQ](notebook/CovidFAQ/05.Generating_ES_Topk_Results_For_Reranking.ipynb)
+    * [StackFAQ](notebook/StackFAQ/05.Generating_ES_Topk_Results_For_Reranking.ipynb)
+    * [FAQIR](notebook/FAQIR/05.Generating_ES_Topk_Results_For_Reranking.ipynb)
+6. Model Training
+    * [CovidFAQ](notebook/CovidFAQ/06.Model_Training.ipynb)
+    * [StackFAQ](notebook/StackFAQ/06.Model_Training.ipynb)
+    * [FAQIR](notebook/FAQIR/06.Model_Training.ipynb)
 7. Generating Re-ranked results
     * [CovidFAQ](notebook/CovidFAQ/07.Generating_Reranked_Results.ipynb)
     * [StackFAQ](notebook/StackFAQ/07.Generating_Reranked_Results.ipynb)
@@ -285,7 +285,7 @@ Start running the notebooks in the following order:
 
   * to generate ES top-k results for re-ranking (CovidFAQ, StackFAQ, FAQIR)
      open notebook
-       06.Generating_ES_Topk_Results_For_Reranking.ipynb
+       05.Generating_ES_Topk_Results_For_Reranking.ipynb
       
     After running the notebook script it will generate the following directories and files:
       
@@ -305,7 +305,7 @@ Start running the notebooks in the following order:
       - copy BERT-FAQ project directory + generated triplet datasets to Google Drive
       - run Google Colaboratory notebook
       - give permission control using credentials 
-          05.Model_Training
+          06.Model_Training
       
       After running the notebook script it will generate the following directories and files:
         * models: directory containing PyTorch models & evaluation results
