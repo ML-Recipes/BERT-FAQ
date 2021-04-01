@@ -28,16 +28,18 @@ class ReRanker(object):
     :param relevance_label_df: dataframe of relevance labels
     """
 
-    def __init__(self, bert_model_path, test_queries, relevance_label_df):
+    def __init__(self, bert_model_path=None, test_queries=None, relevance_label_df=None, rank_field="BERT-Q-a", w_t=10):
         
         self.bert_model_path = bert_model_path
         self.test_queries = test_queries
+        self.rank_field = rank_field
+        self.w_t = w_t
         self.es_topk_results = []
         self.bert_topk_results = []
         self.reranked_results = []
 
-        # Generate a dictionary where {key: query_string, value: list of answers}
-        self.relevance_label = get_relevance_label(relevance_label_df)
+        if relevance_label_df:
+            self.relevance_label = get_relevance_label(relevance_label_df)
         
 
     def get_es_topk_results(self, es, index, query_by, top_k):
@@ -58,33 +60,37 @@ class ReRanker(object):
         s = Searcher(es, index=index, fields=query_by, top_k=top_k)
 
         es_topk_results = []
-        for query_string in tqdm(self.test_queries):
+        
+        if self.test_queries:
+            for query_string in tqdm(self.test_queries):
 
-            # perform querying on ES
-            topk_results = s.query(query_string)
+                # perform querying on ES
+                topk_results = s.query(query_string)
 
-            # get the list of actual answers
-            answers = self.relevance_label[query_string]
-            
-            # obtain relevance label for each answer
-            topk_with_label = []
-            for doc in topk_results:
-                topk_answer = doc['answer']
+                # get the list of actual answers
+                answers = self.relevance_label[query_string]
+                
+                # obtain relevance label for each answer
+                topk_with_label = []
+                for doc in topk_results:
+                    topk_answer = doc['answer']
 
-                # check if the answer is a true answer
-                label = 0
-                if topk_answer in answers:
-                    label = 1
+                    # check if the answer is a true answer
+                    label = 0
+                    if topk_answer in answers:
+                        label = 1
 
-                data = {
-                    "score": doc['score'],
-                    "question": query_string,
-                    "answer": topk_answer,
-                    "label": label
-                }
-                topk_with_label.append(data)
+                    data = {
+                        "score": doc['score'],
+                        "question": query_string,
+                        "answer": topk_answer,
+                        "label": label
+                    }
+                    topk_with_label.append(data)
 
-            es_topk_results.append({"query_string": query_string, "rerank_preds": topk_with_label})
+                es_topk_results.append({"query_string": query_string, "rerank_preds": topk_with_label})
+        else:
+            raise ValueError('error, test queries required')
 
 
         return es_topk_results
@@ -99,7 +105,11 @@ class ReRanker(object):
         
         logging.info("Generating BERT top-k results ...")
         
-        faq_bert = FAQ_BERT(bert_model_path=self.bert_model_path)
+        faq_bert = None
+        if bert_model_path:
+            faq_bert = FAQ_BERT(bert_model_path=self.bert_model_path)
+        else:
+            raise ValueError('error, BERT model path required')
 
         bert_topk_results = []
         for result in tqdm(all_results):
@@ -116,7 +126,13 @@ class ReRanker(object):
                 question = elem['question']
                 answer = elem['answer']
                 
-                bert_score = faq_bert.predict(query_string, answer)
+                bert_score = 0
+                if self.rank_field == "BERT-Q-a":
+                    bert_score = faq_bert.predict(query_string, answer)
+                elif self.rank_field == "BERT-Q-q":
+                    bert_score = faq_bert.predict(query_string, question)
+                else:
+                    raise ValueError("error, no rank_field found for {}".format(self.rank_field))
                 
                 # check if the answer is a true answer
                 label = 0
@@ -158,7 +174,7 @@ class ReRanker(object):
             for pred in topk_preds:
                 question = pred['question']
                 answer = pred['answer']
-                score = pred['es_score'] + pred['bert_score']
+                score = (self.w_t * pred['es_score']) + pred['bert_score']
                 label = pred['label']
 
                 result = {
@@ -195,4 +211,3 @@ class ReRanker(object):
         self.es_topk_results = es_topk_results
         self.bert_topk_results = bert_topk_results
         self.reranked_results = reranked_results
-    
