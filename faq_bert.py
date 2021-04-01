@@ -1,6 +1,6 @@
 import sentence_transformers
 from sentence_transformers import SentenceTransformer, util
-from sentence_transformers.cross_encoder import CrossEncoder
+from sentence_transformers import CrossEncoder
 from shared.utils import isDir
 import numpy as np
 import os
