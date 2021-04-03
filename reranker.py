@@ -1,5 +1,3 @@
-
-
 from shared.utils import load_from_json
 from shared.utils import dump_to_json
 from shared.utils import make_dirs
@@ -26,6 +24,8 @@ class ReRanker(object):
     :param bert_model_path: path residing finetuned BERT model
     :param test_queries: test queries used as query to Elasticsearch index
     :param relevance_label_df: dataframe of relevance labels
+    :param rank_field: BERT prediction for rank_field answer or question
+    :param w_t: weight parameter used for re-ranking of ES score
     """
 
     def __init__(self, bert_model_path=None, test_queries=None, relevance_label_df=None, rank_field="BERT-Q-a", w_t=10):
@@ -38,7 +38,7 @@ class ReRanker(object):
         self.bert_topk_results = []
         self.reranked_results = []
 
-        if relevance_label_df:
+        if not relevance_label_df is None:
             self.relevance_label = get_relevance_label(relevance_label_df)
         
 
@@ -106,7 +106,7 @@ class ReRanker(object):
         logging.info("Generating BERT top-k results ...")
         
         faq_bert = None
-        if bert_model_path:
+        if self.bert_model_path:
             faq_bert = FAQ_BERT(bert_model_path=self.bert_model_path)
         else:
             raise ValueError('error, BERT model path required')
