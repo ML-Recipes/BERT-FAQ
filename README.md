@@ -139,6 +139,50 @@ Technologies used: Python 3.8.3, Elasticsearch 7.10.2, Jupyter Notebook, Google 
 
 ```
 
+## FAQ_BERT_Ranker
+```python
+
+from elasticsearch_dsl.connections import connections
+from faq_bert_ranker import FAQ_BERT_Ranker
+
+try:
+    es = connections.create_connection(hosts=['localhost'])
+except TransportError as e:
+    e.info()
+
+top_k = 100
+dataset = 'CovidFAQ'
+fields = ['question_answer']
+
+# Define model parameters
+loss_type = 'triplet'; neg_type = 'hard'; query_type = 'user_query'; version = '1.1'
+
+model_name = "{}_{}_{}_{}".format(loss_type, neg_type, query_type, version)
+bert_model_path = bert_model_path = "output" + "/" + dataset + "/models/" + model_name
+
+faq_bert_ranker = FAQ_BERT_Ranker(
+  es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path
+)
+
+ranked_results = faq_bert_ranker.rank_results("Where did COVID-19 come from?")
+ranked_result = ranked_results[0]
+print(ranked_result)
+
+'''
+    [
+       {
+        'answer': 'It was first found in Wuhan City, Hubei Province, China. The '
+                  'first cases are linked to a live animal market but now COVID-19 '
+                  'is able to spread person-to-person.',
+        'bert_score': 0.6462,
+        'es_score': 1.0,
+        'question': 'Where did COVID-19 come from?',
+        'score': 1.6462
+       }
+    ]
+ '''
+```
+
 ## Setup
 ```
 1. Clone repository
@@ -192,14 +236,18 @@ publicly available datasets: CovidFAQ, StackFAQ, and FAQIR datasets.
     * [CovidFAQ](notebook/CovidFAQ/06.Model_Training.ipynb)
     * [StackFAQ](notebook/StackFAQ/06.Model_Training.ipynb)
     * [FAQIR](notebook/FAQIR/06.Model_Training.ipynb)
-7. Generating Re-ranked results
-    * [CovidFAQ](notebook/CovidFAQ/07.Generating_Reranked_Results.ipynb)
-    * [StackFAQ](notebook/StackFAQ/07.Generating_Reranked_Results.ipynb)
-    * [FAQIR](notebook/FAQIR/07.Generating_Reranked_Results.ipynb)
-8. Evaluation
-    * [CovidFAQ](notebook/CovidFAQ/08.Evaluation.ipynb)
-    * [StackFAQ](notebook/StackFAQ/08.Evaluation.ipynb)
-    * [FAQIR](notebook/FAQIR/08.Evaluation.ipynb)
+7. Generating BERT Prediction Results
+   * [CovidFAQ](notebook/CovidFAQ/07.Generating_BERT_Prediction_Results.ipynb)
+   * [StackFAQ](notebook/StackFAQ/07.Generating_BERT_Prediction_Results.ipynb)
+   * [FAQIR](notebook/FAQIR/07.Generating_BERT_Prediction_Results.ipynb)
+8. Generating Re-ranked Results
+   * [CovidFAQ](notebook/CovidFAQ/08.Generating_Reranked_Results.ipynb)
+   * [StackFAQ](notebook/StackFAQ/08.Generating_Reranked_Results.ipynb)
+   * [FAQIR](notebook/FAQIR/08.Generating_Reranked_Results.ipynb)
+9. Generating Evaluation of Re-ranked Results
+    * [CovidFAQ](notebook/CovidFAQ/09.Evaluation.ipynb)
+    * [StackFAQ](notebook/StackFAQ/09.Evaluation.ipynb)
+    * [FAQIR](notebook/FAQIR/09.Evaluation.ipynb)
 
 ```
 To run project outline steps do the following: 
@@ -210,7 +258,7 @@ To run project outline steps do the following:
     
 Start running the notebooks in the following order: 
  
- (1) Local Machine (CPU)
+ (1.1) Local Machine (CPU)
     * to parse CovidFAQ, StackFAQ, FAQIR datasets 
       open the following notebooks:
           01.Parsing_aligned_question_question_answer.csv_file.ipynb
@@ -221,16 +269,14 @@ Start running the notebooks in the following order:
         CovidFAQ / StackFAQ / FAQIR  represents directory name for a given dataset name
       
     After running the notebook script it will generate the following files:
-          |
+          
+          BERT-FAQ
           |  |-- data
-          |  |
           |  |  |-- CovidFAQ
-          |  |  |  |  |-- query_answer_pairs.json
-          |  |  |       
+          |  |  |  |  |-- query_answer_pairs.json      
           |  |  |-- StackFAQ
           |  |  |  |  |-- stackExchange-FAQ.json
           |  |  |  |  |-- query_answer_pairs.json
-          |  |
           |  |  |-- FAQIR
           |  |  |  |  |-- FAQIRv1.0.json
           |  |  |  |  |-- query_answer_pairs.json
@@ -244,13 +290,12 @@ Start running the notebooks in the following order:
          03.Generating_Hard_Negatives.ipynb
         
      After running the notebook script it will generate the following files:
-             
+          
+          BERT-FAQ   
           |  |-- data
-          |  |
           |  |  |-- CovidFAQ / StackFAQ / FAQIR
           |  |  |  |  |-- hard_negatives_faq.json
-          |  |  |  |  |-- hard_negatives_user_query.json
-          |  |  |       
+          |  |  |  |  |-- hard_negatives_user_query.json       
           
   * to generate triplet dataset for BERT finetuning (CovidFAQ, StackFAQ, FAQIR)
      open notebook
@@ -258,26 +303,21 @@ Start running the notebooks in the following order:
        
     After running the notebook script it will generate the following directories and files:
      
+          BERT-FAQ
           |  |-- data
-          |  |
-          |  |  |-- CovidFAQ / StackFAQ / FAQIR 
-          |  |  |         
+          |  |  |-- CovidFAQ / StackFAQ / FAQIR          
           |  |  |  |-- dataset
-          |  |  |  |
           |  |  |  |  |-- softmax
           |  |  |  |  |  |-- faq
           |  |  |  |  |  |    |-- hard_faq_dataset.csv
           |  |  |  |  |  |    |-- simple_faq_dataset.csv
-          |  |  |  |  |  |
           |  |  |  |  |  |-- user_query
           |  |  |  |  |  |    |-- hard_faq_dataset.csv
           |  |  |  |  |  |    |-- simple_faq_dataset.csv
-          |  |  |  |  |  |  
           |  |  |  |  |-- triplet
           |  |  |  |  |  |-- faq
           |  |  |  |  |  |  |  |-- hard_faq_dataset.csv
           |  |  |  |  |  |  |  |-- simple_faq_dataset.csv
-          |  |  |  |  |  |
           |  |  |  |  |  |-- user_query
           |  |  |  |  |  |  |  |-- hard_faq_dataset.csv
           |  |  |  |  |  |  |  |-- simple_faq_dataset.csv
@@ -289,8 +329,8 @@ Start running the notebooks in the following order:
       
     After running the notebook script it will generate the following directories and files:
       
+          BERT-FAQ
           |  |-- data
-          |  |  |
           |  |  |-- CovidFAQ / StackFAQ / FAQIR      
           |  |  |  |  |-- rank_results
           |  |  |  |  |  |  |  |-- unsupervised
@@ -302,7 +342,7 @@ Start running the notebooks in the following order:
           
   (2) Google Collaboratory (GPU)
     * to finetune BERT model
-      - copy BERT-FAQ project directory + generated triplet datasets to Google Drive
+      - copy all content from BERT-FAQ project directory to your Google Drive
       - run Google Colaboratory notebook
       - give permission control using credentials 
           06.Model_Training
@@ -311,10 +351,9 @@ Start running the notebooks in the following order:
         * models: directory containing PyTorch models & evaluation results
         * evaluation: directory containing triplet dataset split into train.csv, test.csv, val.csv sets
     
+       BERT-FAQ
        |  |-- output
-       |  |  |
-       |  |  |  |-- CovidFAQ / StackFAQ / FAQIR 
-       |  |  |  |         
+       |  |  |  |-- CovidFAQ / StackFAQ / FAQIR      
        |  |  |  |  |-- models
        |  |  |  |  |  |  |-- softmax_simple_faq_1.1
        |  |  |  |  |  |  |-- softmax_simple_user_query_1.1
@@ -334,16 +373,14 @@ Start running the notebooks in the following order:
        |  |  |  |  |  |  |-- triplet_hard_faq_1.1
        |  |  |  |  |  |  |-- triplet_hard_user_query_1.1
           
-          
-    * to perform re-ranking
-      - copy BERT_FAQ project directory + generated rank_results directory (CovidFAQ, StackFAQ, FAQIR)
+    * generate BERT prediction results
       - run Google Colaboratory notebook
-           07.Generating_Reranked_Results
+           07.Generating_BERT_Prediction_Results.ipynb
       
-      After running the notebook script it will generate the following files:
-        
+      After running the notebook script it will generate the following directories & files:
+          
+          BERT-FAQ
           |  |-- data
-          |  |  |
           |  |  |-- CovidFAQ / StackFAQ / FAQIR      
           |  |  |  |  |-- rank_results
           |  |  |  |  |  |  |  |-- unsupervised
@@ -352,7 +389,126 @@ Start running the notebooks in the following order:
           |  |  |  |  |  |  |  |  |  |  |-- es_query_by_question_answer.json
           |  |  |  |  |  |  |  |  |  |  |-- es_query_by_question_answer_concat.json
           |  |  |  |  |  |  |  |-- supervised
-          |  |  |  |  |  |  |  |  |  |  |-- softmax
+          |  |  |  |  |  |  |  |  |  |-- BERT-Q-a 
+          |  |  |  |  |  |  |  |  |  |  |  |-- softmax
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |-- triplet
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |-- BERT-Q-q 
+          |  |  |  |  |  |  |  |  |  |  |  |-- softmax
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |-- triplet
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+    
+ (1.2) Local Machine (CPU)
+    * to perform re-ranking
+      - copy from BERT_FAQ project (Google Drive) the following directories to local machine:
+         
+            data/StackFAQ/rank_results
+            data/CovidFAQ/rank_result
+            data/FAQIR/rank_result
+         
+      - open & run notebook
+           08.Generating_Reranked_Results.ipynb
+      
+      After running the notebook script it will generate the following directories & files:
+          
+          BERT-FAQ
+          |  |-- data
+          |  |  |-- CovidFAQ / StackFAQ / FAQIR      
+          |  |  |  |  |-- rank_results
+          |  |  |  |  |  |  |  |-- unsupervised
+          |  |  |  |  |  |  |  |  |  |  |-- es_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |-- es_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |-- es_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |-- es_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |-- supervised
+          |  |  |  |  |  |  |  |  |  |-- BERT-Q-a 
+          |  |  |  |  |  |  |  |  |  |  |  |-- softmax
           |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
@@ -391,7 +547,86 @@ Start running the notebooks in the following order:
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
-          |  |  |  |  |  |  |  |  |  |  |-- triplet
+          |  |  |  |  |  |  |  |  |  |  |  |-- triplet
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |-- BERT-Q-q 
+          |  |  |  |  |  |  |  |  |  |  |  |-- softmax
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |-- user_query
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- hard
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer.json
+          |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- reranked_query_by_question_answer_concat.json
+          |  |  |  |  |  |  |  |  |  |  |  |-- triplet
           |  |  |  |  |  |  |  |  |  |  |  |  |-- faq
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- simple
           |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |-- bert_query_by_answer.json
@@ -433,66 +668,8 @@ Start running the notebooks in the following order:
           
     
       * to generate evaluation metrics: NDCG@3, NDCG@5, NDCG@10, P@3, P@5, P@10, MAP
-        copy & override "rank_results" directory from Google Drive/BERT-FAQ to BERT-FAQ (local machine)
-            e.g. BERT-FAQ/data/CovidFAQ/rank_results
-            e.g. BERT-FAQ/data/StackFAQ/rank_results
-            e.g. BERT-FAQ/data/FAQIR/rank_results
-        
-        run notebook (CovidFAQ, StackFAQ, FAQIR)
-            08.Evaluation.ipynb
-        
-        it generates results.csv file:
-          
-          |  |-- data
-          |  |  |
-          |  |  |-- CovidFAQ / StackFAQ / FAQIR      
-          |  |  |  |  |-- rank_results
-          |  |  |  |  |  |  |  |-- results.csv
-          
-```
-
-## FAQ BERT Ranker
-```python
-
-from elasticsearch_dsl.connections import connections
-from faq_bert_ranker import FAQ_BERT_Ranker
-
-try:
-    es = connections.create_connection(hosts=['localhost'])
-except TransportError as e:
-    e.info()
-
-top_k = 100
-dataset = 'CovidFAQ'
-fields = ['question_answer']
-
-# Define model parameters
-loss_type = 'triplet'; neg_type = 'hard'; query_type = 'user_query'; version = '1.1'
-
-model_name = "{}_{}_{}_{}".format(loss_type, neg_type, query_type, version)
-bert_model_path = bert_model_path = "output" + "/" + dataset + "/models/" + model_name
-
-faq_bert_ranker = FAQ_BERT_Ranker(
-  es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path
-)
-
-ranked_results = faq_bert_ranker.rank_results("Where did COVID-19 come from?")
-ranked_result = ranked_results[0]
-print(ranked_result)
-
-'''
-    [
-       {
-        'answer': 'It was first found in Wuhan City, Hubei Province, China. The '
-                  'first cases are linked to a live animal market but now COVID-19 '
-                  'is able to spread person-to-person.',
-        'bert_score': 0.6462,
-        'es_score': 1.0,
-        'question': 'Where did COVID-19 come from?',
-        'score': 1.6462
-       }
-    ]
- '''
+        open & run notebook 
+            09.Evaluation.ipynb          
 ```
 
 ## Citations
