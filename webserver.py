@@ -15,6 +15,29 @@ except TransportError as e:
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+@app.route('/api/chatbot/search/<dataset>', methods=['GET'])
+@cross_origin()
+def get_index_list(dataset):
+    try:
+        index_list = []
+        count = -1
+        for elem in es.cat.indices(format="json"):
+            if elem['index'].startswith(dataset):
+                count += 1
+                index = elem['index']
+                num_docs = es.count(index=index)["count"]
+                index_list.append(
+                    {
+                        "label": index.split("_")[1],
+                        "value": count,
+                        "legend": str(num_docs)
+                    }
+                )
+    except Exception as e:
+        return {"Error ": str(e)}
+
+    return json.dumps(index_list)
+
 @app.route("/api/chatbot/", methods=["POST"])
 @cross_origin()
 def chatbot_response():
