@@ -1,7 +1,7 @@
 from elasticsearch_dsl.connections import connections
 from elasticsearch import Elasticsearch, TransportError
 from flask import Flask, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 
 from faq_bert_ranker import FAQ_BERT_Ranker
@@ -16,6 +16,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route("/api/chatbot/", methods=["POST"])
+@cross_origin()
 def chatbot_response():
     try:
         json_data = request.get_json(force=True)
