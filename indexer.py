@@ -2,6 +2,7 @@ from elasticsearch_dsl import Index, Document, Integer, Text, analyzer, Keyword,
 from elasticsearch_dsl.connections import connections
 from elasticsearch import Elasticsearch, helpers
 from evaluation import get_relevance_label_df
+from datetime import datetime
 from tqdm import tqdm
 import logging
 import json
@@ -55,20 +56,24 @@ if __name__ == "__main__":
         es = connections.create_connection(hosts=['localhost'])
         
         dirnames = ["CovidFAQ", "FAQIR", "StackFAQ"]
-        
+
         index_name = ""
         faq_qa_pairs = []
+
+        now = datetime.now()
+        date = now.strftime("%Y-%m-%d")
+
         for dirname in dirnames:
             if dirname == "CovidFAQ":
-                index_name = "covidfaq"
+                index_name = "covidfaq_" + date
                 filepath = 'data/' + dirname + '/query_answer_pairs.json'
                 faq_qa_pairs = get_faq_qa_pairs(filepath)
             elif dirname == "FAQIR":
-                index_name = "faqir"
+                index_name = "faqir_" + date
                 filepath = 'data/' + dirname + '/query_answer_pairs.json'
                 faq_qa_pairs = get_faq_qa_pairs(filepath)
             elif dirname == "StackFAQ":
-                index_name = "stackfaq"
+                index_name = "stackfaq_" + date
                 filepath = 'data/' + dirname + '/query_answer_pairs.json'
                 faq_qa_pairs = get_faq_qa_pairs(filepath)
             else:
