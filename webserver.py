@@ -13,9 +13,9 @@ except TransportError as e:
     e.info()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/bert/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@app.route("/api/bert/", methods=["POST"])
+@app.route("/api/chatbot/", methods=["POST"])
 def chatbot_response():
     try:
         json_data = request.get_json(force=True)
