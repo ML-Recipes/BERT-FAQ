@@ -8,7 +8,7 @@ from faq_bert_ranker import FAQ_BERT_Ranker
 from shared.utils import isDir
 
 try:
-    es = connections.create_connection(hosts=['localhost'])
+    es = connections.create_connection(hosts=['localhost'], http_auth=('elastic', 'elastic'))
 except TransportError as e:
     e.info()
 
@@ -33,6 +33,9 @@ def get_index_list(dataset):
                         "legend": str(num_docs)
                     }
                 )
+
+        index_list = sorted(index_list, key= lambda k: k['label'])
+
     except Exception as e:
         return {"Error ": str(e)}
 
@@ -47,6 +50,7 @@ def chatbot_response():
         query_string = json_data['query_string']
         top_k = json_data.get('top_k', 5)
         dataset = json_data.get('dataset', 'CovidFAQ')
+        index = json_data.get('index')
         fields = json_data.get('field', ['question_answer'])
         
         # Define model parameters
@@ -65,7 +69,7 @@ def chatbot_response():
         
         # Perform ranking
         faq_bert_ranker = FAQ_BERT_Ranker(
-            es=es, index=dataset.lower(), fields=fields, top_k=top_k, bert_model_path=bert_model_path
+            es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path
         )
 
         ranked_results = faq_bert_ranker.rank_results(query_string)
