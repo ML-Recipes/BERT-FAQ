@@ -69,7 +69,7 @@ def chatbot_response():
         
         # Perform ranking
         faq_bert_ranker = FAQ_BERT_Ranker(
-            es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path
+            es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path, search_mode='history'
         )
 
         ranked_results = faq_bert_ranker.rank_results(query_string)
