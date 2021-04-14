@@ -1,5 +1,6 @@
 from faq_bert import FAQ_BERT
 from searcher import Searcher
+from history_searcher import History_Searcher
 
 class FAQ_BERT_Ranker(object):
     """ Class to generate top-k ranked results for a given input query string 
@@ -11,16 +12,21 @@ class FAQ_BERT_Ranker(object):
     :param rank_field: BERT prediction for rank_field answer or question
     :param w_t: weight parameter used for re-ranking of ES score
     """
-    def __init__(self, es, index, fields, top_k, bert_model_path, rank_field='BERT-Q-a', w_t=10):
+    def __init__(self, es, index, fields, top_k, bert_model_path, search_mode='current', rank_field='BERT-Q-a', w_t=10):
         self.es = es
         self.index = index
         self.fields = fields
         self.top_k = top_k
         self.bert_model_path = bert_model_path
+        self.search_mode = search_mode
         self.rank_field = rank_field
         self.w_t = w_t
         
-        self.searcher = Searcher(es, index, fields, top_k)
+        self.searcher = None
+        if self.search_mode == 'current':
+            self.searcher = Searcher(es, index, fields, top_k)
+        else:
+            self.searcher = History_Searcher(es, index, fields, top_k)
 
         self.es_topk_results = []
         self.bert_topk_preds = []
@@ -36,13 +42,27 @@ class FAQ_BERT_Ranker(object):
            
         topk_results = []
         for doc in results:
-            topk_results.append(
-                {
-                    "es_score": float("{0:.4f}".format(doc['score'])),
-                    "question": doc['question'],
-                    "answer": doc['answer']
-                }
-            )
+
+            if self.search_mode == 'current':
+                topk_results.append(
+                    {
+                        "es_score": float("{0:.4f}".format(doc['score'])),
+                        "question": doc['question'],
+                        "answer": doc['answer']
+                    }
+                )
+            else:
+                topk_results.append(
+                    {
+                        "es_score": float("{0:.4f}".format(doc['score'])),
+                        "question": doc['question'],
+                        "answer": doc['answer'],
+                        "sourceUrl": doc['sourceUrl'],
+                        "sourceName": doc['sourceName'],
+                        "date": doc['date'],
+                        "month": doc['month']
+                    }
+                )
 
         es_topk_results = dict()
         es_topk_results['query_string'] = query_string
@@ -76,14 +96,28 @@ class FAQ_BERT_Ranker(object):
             else:
                 raise ValueError("error, no rank_field found for {}".format(self.rank_field))
 
-            bert_topk_preds.append(
-                {
-                    "question": query_string,
-                    "answer": answer,
-                    "es_score": es_score,
-                    "bert_score": float("{0:.4f}".format(bert_score))
-                }
-            )
+            if self.search_mode == 'current':
+                bert_topk_preds.append(
+                    {
+                        "question": query_string,
+                        "answer": answer,
+                        "es_score": es_score,
+                        "bert_score": float("{0:.4f}".format(bert_score))
+                    }
+                )
+            else:
+                bert_topk_preds.append(
+                    {
+                        "question": query_string,
+                        "answer": answer,
+                        "es_score": es_score,
+                        "bert_score": float("{0:.4f}".format(bert_score)),
+                        "sourceUrl": doc['sourceUrl'],
+                        "sourceName": doc['sourceName'],
+                        "date": doc['date'],
+                        "month": doc['month']
+                    }
+                )
         
         return bert_topk_preds
 
@@ -101,15 +135,30 @@ class FAQ_BERT_Ranker(object):
             bert_score = doc['bert_score']
             score = (self.w_t * es_score) + bert_score
 
-            norm_results.append(
-                {
-                    "question": question,
-                    "answer": answer,
-                    "es_score": es_score,
-                    "bert_score": bert_score,
-                    "score": float("{0:.4f}".format(score))
-                }
-            )
+            if self.search_mode == 'current':
+                norm_results.append(
+                    {
+                        "question": question,
+                        "answer": answer,
+                        "es_score": es_score,
+                        "bert_score": bert_score,
+                        "score": float("{0:.4f}".format(score))
+                    }
+                )
+            else:
+                norm_results.append(
+                    {
+                        "question": question,
+                        "answer": answer,
+                        "es_score": es_score,
+                        "bert_score": bert_score,
+                        "score": float("{0:.4f}".format(score)),
+                        "sourceUrl": doc['sourceUrl'],
+                        "sourceName": doc['sourceName'],
+                        "date": doc['date'],
+                        "month": doc['month']
+                    }
+                )
 
         ranked_results = sorted(norm_results, key=lambda x: x['score'], reverse=True)
         
