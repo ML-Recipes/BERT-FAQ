@@ -2,10 +2,22 @@ from elasticsearch_dsl.connections import connections
 from elasticsearch import Elasticsearch, TransportError
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
+from dotenv import load_dotenv
+from pathlib import Path
+import dialogflow
 import json
+import os
 
 from faq_bert_ranker import FAQ_BERT_Ranker
 from shared.utils import isDir
+
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+project_id =  os.environ.get('PROJECT_ID')
+session_id = os.environ.get('SESSION_ID')
+language_code = os.environ.get('LANGUAGE_CODE')
+chatbot_credentials = os.environ.get('CHATBOT_CREDENTIALS')
 
 try:
     es = connections.create_connection(hosts=['localhost'], http_auth=('elastic', 'elastic'))
@@ -46,7 +58,7 @@ def get_index_list(dataset):
 def chatbot_response():
     try:
         json_data = request.get_json(force=True)
-
+        
         query_string = json_data['query_string']
         top_k = json_data.get('top_k', 5)
         dataset = json_data.get('dataset', 'CovidFAQ')
@@ -59,27 +71,52 @@ def chatbot_response():
         neg_type  = json_data.get('neg_type', 'Hard')
         query_type = json_data.get('query_type', 'USER_QUERY')
 
-        # Get model name from model parameters
-        model_name = "{}_{}_{}_{}".format(loss_type.lower(), neg_type.lower(), query_type.lower(), version)
-        bert_model_path = "output" + "/" + dataset + "/models/" + model_name
+        # Handle Dialogflow 
+        session_client = dialogflow.SessionsClient()
+        session = session_client.session_path(project_id, session_id)
+        text_input = dialogflow.types.TextInput(text=query_string, language_code=language_code)
+        query_input = dialogflow.types.QueryInput(text=text_input)
+        response = session_client.detect_intent(session=session, query_input=query_input)
+    
+        if response.query_result.intent.display_name == 'Default Welcome Intent':
 
-        if not isDir(bert_model_path):
-            response = [{"answer": "No model found with given parameters ..."}]
-            return json.dumps(response)
-        
-        # Perform ranking
-        faq_bert_ranker = FAQ_BERT_Ranker(
-            es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path, search_mode='history'
-        )
-
-        ranked_results = faq_bert_ranker.rank_results(query_string)
-      
-        if ranked_results:
-            return json.dumps(ranked_results)
+            return json.dumps([
+                                    {
+                                        "_type":  "dialogflow",
+                                        "answer": response.query_result.fulfillment_text,
+                                        "intent": response.query_result.intent.display_name,
+                                        "confidence": response.query_result.intent_detection_confidence
+                                    }
+                                ]
+            )
+    
         else:
-            response = [{"answer": "No result found for the given question ..."}]
-            return json.dumps(response)
+            # Get model name from model parameters
+            model_name = "{}_{}_{}_{}".format(loss_type.lower(), neg_type.lower(), query_type.lower(), version)
+            bert_model_path = "output" + "/" + dataset + "/models/" + model_name
 
+            if not isDir(bert_model_path):
+                response = [{"answer": "No model found with given parameters ..."}]
+                return json.dumps(response)
+            
+            # Perform ranking
+            faq_bert_ranker = FAQ_BERT_Ranker(
+                es=es, index=index, fields=fields, top_k=top_k, bert_model_path=bert_model_path, search_mode='history'
+            )
+
+            ranked_results = faq_bert_ranker.rank_results(query_string)
+        
+            if ranked_results:
+                return json.dumps(ranked_results)
+            else:
+                response = [
+                    {
+                        "_type": "error",
+                        "answer": "Sorry I could not find any answer! Please ask again."
+                    }
+                ]
+                return json.dumps(response)
+        
     except Exception as e:
         return {"Error ": str(e)}
 
