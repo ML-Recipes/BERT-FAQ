@@ -33,7 +33,11 @@ def ingest_history_data(data, es, index):
             if 'sourceName' in pair:
                 doc.sourceName = pair['sourceName']
             if 'date' in pair:
-                doc.date = pair['date']
+                date = str(pair['date'])
+                year = date[:4]
+                month = date[4:6]
+                day = date[-2:]
+                doc.date = day + "/" + month + "/" + year
             if 'month' in pair:
                 doc.month = pair['month']
             if 'question' in pair:
