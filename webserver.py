@@ -48,10 +48,31 @@ def get_index_list(dataset):
 
         index_list = sorted(index_list, key= lambda k: k['label'])
 
+        ### TO-DO: get all questions for each index and extract top-k terms
+
+        # Iterate over the list of indices to compute the diffence of documents
+        index_list_ = []
+        prev_num_docs = 0
+        for index in index_list:
+
+            label = index['label']
+            value = index['value']
+            num_docs = int(index['legend'])
+            diff_docs = num_docs - prev_num_docs
+            index_list_.append(
+                    {
+                        "label": label,
+                        "value": value,
+                        "legend": str(num_docs) + " <small>(+" + str(diff_docs) + ")</small>",
+                        "topics": ["travel", "spread"] # 
+                    }
+                )
+            prev_num_docs = num_docs
+
     except Exception as e:
         return {"Error ": str(e)}
 
-    return json.dumps(index_list)
+    return json.dumps(index_list_)
 
 @app.route("/api/chatbot/", methods=["POST"])
 @cross_origin()
