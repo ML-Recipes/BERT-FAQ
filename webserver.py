@@ -38,17 +38,55 @@ def get_index_list(dataset):
                 count += 1
                 index = elem['index']
                 num_docs = es.count(index=index)["count"]
+                
+                # begin: aggregate topics and document counts
+                response = es.search(
+                    index= index,
+                    body={
+                        "size": 10000,
+                        "query": {
+                            "match_all": {}
+                        }
+                    }
+                )
+                
+                hits = response['hits']['hits']
+                total_hits = response['hits']['total']['value']
+
+                doc_count = {}
+                for hit in hits:
+                    topic = hit['_source']['topic']
+                    if topic in doc_count:
+                        prev_count = doc_count[topic]
+                        doc_count[topic] = prev_count + 1
+                    else:
+                        doc_count[topic] = 1
+                # end: aggregate topics and document counts
+                topic_list = []
+                for topic in doc_count:
+                    topic_list.append(
+                        {
+                            "topic": topic,
+                            "num_doc": doc_count[topic],
+                        }
+                    )
+                topic_list = sorted(topic_list, key= lambda k: k['num_doc'], reverse=True)
+               
+                topk_topic = []
+                for topic in topic_list:
+                    t = topic['topic'] + " (" + str(topic['num_doc']) + ")"
+                    topk_topic.append(t)
+
                 index_list.append(
                     {
                         "label": index.split("_")[1],
                         "value": count,
-                        "legend": str(num_docs)
+                        "legend": str(num_docs),
+                        "topics": topk_topic
                     }
                 )
 
         index_list = sorted(index_list, key= lambda k: k['label'])
-
-        ### TO-DO: get all questions for each index and extract top-k terms
 
         # Iterate over the list of indices to compute the diffence of documents
         index_list_ = []
@@ -57,6 +95,7 @@ def get_index_list(dataset):
 
             label = index['label']
             value = index['value']
+            topk_topic = index['topics']
             num_docs = int(index['legend'])
             diff_docs = num_docs - prev_num_docs
             index_list_.append(
@@ -64,7 +103,7 @@ def get_index_list(dataset):
                         "label": label,
                         "value": value,
                         "legend": str(num_docs) + " <small>(+" + str(diff_docs) + ")</small>",
-                        "topics": ["travel", "spread"] # 
+                        "topics": topk_topic
                     }
                 )
             prev_num_docs = num_docs
