@@ -11,13 +11,16 @@ import json
 import os
 
 class QA(Document):
-    sourceUrl = Text()
+    topic = Keyword()
+    orgSourceUrl = Text()
+    sourceUrl = Text()      # wayBackUrl
     sourceName = Text()
-    date = Text()
-    month = Text()
-    question = Text()
-    answer = Text()
-    question_answer = Text()
+    dateScraped = Keyword()
+    date = Keyword()
+    month = Keyword()
+    question = Text(analyzer='snowball')
+    answer = Text(analyzer='snowball')
+    question_answer = Text(analyzer='snowball')
 
 def ingest_history_data(data, es, index):
     """ Ingest data as a bulk of documents to ES index """
@@ -28,10 +31,16 @@ def ingest_history_data(data, es, index):
             # initialize QA document
             doc = QA()
 
+            if 'normTopic' in pair:
+                doc.topic = pair['normTopic']
             if 'sourceUrl' in pair:
-                doc.sourceUrl = pair['sourceUrl']
+                doc.sourceUrl = pair['wayBackUrl']
+            if 'sourceUrl' in pair:
+                doc.orgSourceUrl = pair['sourceUrl']
             if 'sourceName' in pair:
                 doc.sourceName = pair['sourceName']
+            if 'dateScraped' in pair:
+                doc.dateScraped = pair['dateScraped']
             if 'date' in pair:
                 date = str(pair['date'])
                 year = date[:4]
