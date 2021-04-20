@@ -1,4 +1,5 @@
 import json
+import pickle
 import os
 
 def isDir(dirname):
@@ -45,3 +46,10 @@ def dump_to_txt(data, filepath):
     """
     with open(filepath, "w") as file :
         file.write(data)
+
+def dump_to_pickle(data, filepath):
+    """ Dump data to pickle format to a given filepath name
+    :param filepath: filepath name
+    """ 
+    with open(filepath, "wb") as file:
+        pickle.dump(data, file)
