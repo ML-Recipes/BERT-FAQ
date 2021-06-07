@@ -300,3 +300,8 @@ output/CovidFAQ/evaluation/.DS_Store
 output/CovidFAQ/models/.DS_Store
 .DS_Store
 *.pyc
+notebook/CovidFAQ/.ipynb_checkpoints/05.Generating_ES_Topk_Results_For_Reranking-checkpoint.ipynb
+notebook/FAQIR/.ipynb_checkpoints/05.Generating_ES_Topk_Results_For_Reranking-checkpoint.ipynb
+notebook/StackFAQ/.ipynb_checkpoints/05.Generating_ES_Topk_Results_For_Reranking-checkpoint.ipynb
+notebook/CovidFAQ/.ipynb_checkpoints/05.Generating_ES_Topk_Results_For_Reranking-checkpoint.ipynb
+notebook/CovidFAQ/.ipynb_checkpoints/05.Generating_ES_Topk_Results_For_Reranking-checkpoint.ipynb
