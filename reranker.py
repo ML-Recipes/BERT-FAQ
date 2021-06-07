@@ -74,6 +74,7 @@ class ReRanker(object):
                 topk_with_label = []
                 for doc in topk_results:
                     topk_answer = doc['answer']
+                    topk_question = doc['question']
 
                     # check if the answer is a true answer
                     label = 0
@@ -82,7 +83,8 @@ class ReRanker(object):
 
                     data = {
                         "score": doc['score'],
-                        "question": query_string,
+                        "query_string": query_string,
+                        "question": topk_question,
                         "answer": topk_answer,
                         "label": label
                     }

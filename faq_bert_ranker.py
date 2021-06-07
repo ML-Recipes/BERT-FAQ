@@ -99,7 +99,8 @@ class FAQ_BERT_Ranker(object):
             if self.search_mode == 'current':
                 bert_topk_preds.append(
                     {
-                        "question": query_string,
+                        "query_string": query_string,
+                        "question": question,
                         "answer": answer,
                         "es_score": es_score,
                         "bert_score": float("{0:.4f}".format(bert_score))
@@ -108,7 +109,8 @@ class FAQ_BERT_Ranker(object):
             else:
                 bert_topk_preds.append(
                     {
-                        "question": query_string,
+                        "query_string": query_string,
+                        "question": question,
                         "answer": answer,
                         "es_score": es_score,
                         "bert_score": float("{0:.4f}".format(bert_score)),
