@@ -299,3 +299,4 @@ output/CovidFAQ/.DS_Store
 output/CovidFAQ/evaluation/.DS_Store
 output/CovidFAQ/models/.DS_Store
 .DS_Store
+*.pyc
