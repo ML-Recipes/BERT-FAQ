@@ -136,10 +136,11 @@ class Evaluation(object):
         
         for item in list_of_qas:
             total_questions += 1
-            jc = float(item['jc_sim'])
-            if jc <= jc_threshold:
-                filtered_questions += 1
-                self.valid_queries.append(item['question'])
+            if 'jc_sim' in item:
+                jc = float(item['jc_sim'])
+                if jc <= jc_threshold:
+                    filtered_questions += 1
+                    self.valid_queries.append(item['question'])
     
     def compute_map(self, result_filepath, ranker, match_field, rank_field="", loss_type="", query_type="", neg_type=""):
         """ Compute average precision score for a set of rank results
