@@ -1,4 +1,5 @@
-
+from evaluation import jaccard_similarity
+from evaluation import levenstein_distance
 
 class CovidFAQ_Parser(object):
     """ Class for parsing & extracting data from aligned_question_answer.csv """
@@ -33,14 +34,24 @@ class CovidFAQ_Parser(object):
 
         elif query_type == "user_query":
             # select query_string, answer columns
-            df = df[['query_string', 'answer']]
+            df = df[['query_string', 'question', 'answer']]
 
             for _, row in df.iterrows():
+                query_string = row["query_string"]
+                question = row["question"]
+                answer = row["answer"]
+                
+                jc_sim = jaccard_similarity(query_string, question)
+                lv_dist = levenstein_distance(query_string, question)
+
                 data = dict()
                 data["label"] = 1
                 data["query_type"] = "user_query"
-                data["question"] = row["query_string"]
-                data["answer"] = row["answer"]
+                data["query_string"] = query_string
+                data["question"] = question
+                data["answer"] = answer
+                data['jc_sim'] = "{0:.4f}".format(jc_sim)
+                data['lv_dist'] = "{0:.4f}".format(lv_dist)
                 qa_pairs.append(data)
         else:
             raise ValueError('error, no query_type found for {}'.format(query_type))
