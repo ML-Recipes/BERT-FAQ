@@ -1,11 +1,31 @@
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import ndcg_score
 from shared.utils import load_from_json
+import textdistance
 import pandas as pd
 import numpy as np
 import os.path
 
 pd.set_option('display.max_rows', 100)
+
+def jaccard_similarity(doc1, doc2): 
+    # List the unique words in a document
+    words_doc1 = set(doc1.lower().split()) 
+    words_doc2 = set(doc2.lower().split())
+    
+    # Find the intersection of words list of doc1 & doc2
+    intersection = words_doc1.intersection(words_doc2)
+
+    # Find the union of words list of doc1 & doc2
+    union = words_doc1.union(words_doc2)
+        
+    # Calculate Jaccard similarity score 
+    # using length of intersection set divided by length of union set
+    return float(len(intersection)) / len(union)
+
+def levenstein_distance(doc1, doc2):
+    lv_dist = textdistance.levenshtein.normalized_similarity(doc1, doc2)
+    return lv_dist
 
 def get_relevance_label_df(query_answer_pair_filepath):
     query_answer_pair = load_from_json(query_answer_pair_filepath)
